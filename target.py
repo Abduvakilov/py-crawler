@@ -28,15 +28,15 @@ class Target:
 			source.decode(self.domain.enc).encode('utf8')
 		self.lxml = lxml.fromstring(source)
 
-	def required(self, xpath1, *xpath2):
+	def required(self, xpath1, xpath2):
 		self.required_element = self.lxml.find(xpath1)
 		if self.required_element is not None:
-			if xpath2[0] is not None:
-				return self.required_element.find(xpath2[0]) is not None
+			if xpath2 is not None:
+				return self.required_element.find(xpath2) is not None
 			else: return True
 		else: return False
 
-	def drop(self, xpath):
+	def drop_from(self, name, xpath):
 		for element in self.lxml.xpath(xpath):
 			element.drop_tree()
 
@@ -48,12 +48,32 @@ class Target:
 		for br in self.required_element.xpath('//br'):
 			br.text = self.br_replacer
 		self.data[name] = self.required_element.text_content().replace('\t', '').replace('\n', '')
+		self.data[name] = self.space(self.data[name])
 
 	def get_data(self, name, xpath):
-			self.data[name] = self.lxml.xpath(xpath)[0].text_content().replace('\t', '').replace('\n', '')
+		for br in self.required_element.xpath('//br'):
+			br.text = self.br_replacer
+		self.data[name] = self.lxml.xpath(xpath)[0].text_content().replace('\t', '').replace('\n', '')
+		self.data[name] = self.space(self.data[name])
+
+	def space(self, data):
+		import re
+		return " ".join(re.split("\s+", data, flags=re.UNICODE)).strip()
+
+	def get_data_int(self, name, xpath):
+		num = self.lxml.xpath(xpath)
+		if num:
+			import re
+			self.data[name] = int(re.search(r'\d+', num[0].text_content()).group())
+
+	def get_data_date(self, name, xpath, format=['%d %B %Y']):
+		date = dateparser.parse(self.lxml.xpath(xpath)[0].text_content(), date_formats=format, languages=['ru'])
+		if date:
+			import dateparser
+			self.data[name] = date.strftime('%d.%m.%y')
 
 	def get_data_array(self, name, xpath):
-			self.data[name] = [e.text_content() for e in self.lxml.xpath(xpath)]
+		self.data[name] = [e.text_content() for e in self.lxml.xpath(xpath)]
 
 	def send_data(self, day):
 		self.data['crawledDate'] = day

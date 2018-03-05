@@ -9,7 +9,7 @@ class Crawl:
 	max_pages_to_visit = 1000
 	numPagesVisited    = 0
 	urlNotContains     = ['#','.jpg']
-	# def condition():
+	require2 = None
 
 	
 	def __init__(self, start_url):
@@ -26,8 +26,9 @@ class Crawl:
 			print 'Visiting page ', self.numPagesVisited, ': ', url
 			try:
 				req = urlopen(url)
-			except:
+			except Exception as e:
 				print 'error getting url ' + str(self.numPagesVisited) + ' ' + url
+				print e
 				continue
 			else:
 				code  = req.getcode()
@@ -52,12 +53,13 @@ class Crawl:
 		t    = target.Target(req, self.domain)
 		
 		# Main Part
-		if t.required(self.require1,self.require2):
+		if t.required(self.require1, self.require2):
 			print 'target found'
 
 			self.scrape(t)
 
-            print t.data['title']
+			for e in t.data:
+				print('%s: %s' % (e, t.data[e])) 
 			t.send_data(self.day)
 		else:
 			t.not_found(self.day)
