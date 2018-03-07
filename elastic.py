@@ -1,5 +1,12 @@
+import os
 import elasticsearch
-es        = elasticsearch.Elasticsearch()
+try:
+	espath = os.environ['es']
+except KeyError:
+	es     = elasticsearch.Elasticsearch()
+else:
+	es     = elasticsearch.Elasticsearch(espath)
+
 nextPages = []
 def exists(url):
 	return es.exists(index="crawled", doc_type='crawled', id=url)
@@ -41,19 +48,19 @@ def next(crawledBefore, site):
 					}
 				})
 		except elasticsearch.ElasticsearchException as err:
-			print err
+			print(err)
 		else:
 			if res['hits']['total'] != 0:
 				nextPages = [e['_id'] for e in res['hits']['hits']]
 				return cont()
 			else:
-				print 'no nextpage'
+				print('no nextpage')
 				return
 
 def update(index, _id, body):
 	try:
 		return es.update(index=index, doc_type=index, id=_id, body=body, _source=False)
 	except elasticsearch.ElasticsearchException as err:
-		print err
+		print(err)
 	# else:
 	# 	print res

@@ -1,11 +1,12 @@
 import sys
 sys.path.append(sys.path[0].replace('/list', ''))
+
 import crawl
 
 crawler = crawl.Crawl('https://mover.uz/')
 
 
-crawler.require1 = './/h1[@class="fl video-title"]'
+crawler.require1 = './/div[@id="aboutUser"]'
 
 def scrape(t):
 	t.set_main('title')

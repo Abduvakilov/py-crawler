@@ -1,16 +1,16 @@
 import elastic as es
-import urlparse
+from urllib import parse
 import lxml.html as lxml
 
 class Domain:
 	def __init__(self, url):
-		parse    = urlparse.urlparse(url)
-		self.site     = parse.netloc
-		self.base_url = parse.scheme + '://' + self.site + '/'
+		short    = parse.urlparse(url)
+		self.site     = short.netloc
+		self.base_url = short.scheme + '://' + self.site + '/'
 		self.enc      = 'utf8'
 		if not es.exists(url):
 			es.update('crawled', self.base_url, {'doc':{'crawled': self.site, 'isTarget': False}, 'doc_as_upsert': True})
-			print 'First start of ' + self.site
+			print('First start of ' + self.site)
 			import time
 			time.sleep(2)
 	def next_url(self, crawledBefore):
@@ -97,15 +97,15 @@ class Target:
 			if a not in unique_links and noSubstring(a):
 				unique_links.append(a)
 				try:
-					absl = urlparse.urljoin(self.domain.base_url, a)
+					absl = parse.urljoin(self.domain.base_url, a)
 				except ValueError:
-					print 'error____________________\n'+a
-				if (urlparse.urlparse(absl).netloc == self.domain.site):
+					print('error____________________\n'+a)
+				if (parse.urlparse(absl).netloc == self.domain.site):
 					actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
 		try:
 			es.es.bulk(actions, index='crawled', doc_type='crawled')
 		except es.elasticsearch.ElasticsearchException as err:
-			print 'error: ' + err
+			print('error: ' + err)
 
 
 
