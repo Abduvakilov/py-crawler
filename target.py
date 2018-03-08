@@ -99,15 +99,8 @@ class Target:
 				unique_links.append(a)
 				url = parse.urlparse(a)
 				if url.netloc == self.domain.site or url.netloc == '':
-					try:
-						quoted_path = parse.quote(url.path)
-						if url.query:
-							quoted_path+='?'+url.query
-						absl = parse.urljoin(self.domain.base_url, quoted_path)	
-					except ValueError:
-						print('error____________________\n'+a)
-					if parse.urlparse(absl).netloc == self.domain.site:
-						actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
+					absl = parse.urljoin(self.domain.base_url, a)
+					actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
 		try:
 			es.es.bulk(actions, index='crawled', doc_type='crawled')
 		except es.elasticsearch.ElasticsearchException as err:

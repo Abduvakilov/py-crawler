@@ -29,15 +29,14 @@ class Crawl:
 			url   = self.domain.next_url(self.crawledBefore)
 			self.numPagesVisited +=1
 			print('Visiting page ', self.numPagesVisited, ': ', url)
-			quoted_url = ''
+
+			url_parse  = target.parse.urlparse(url)
+			encoded_url = url_parse.scheme+'://'+url_parse.netloc+target.parse.quote(url_parse.path)
+			if url_parse.query:
+				encoded_url+='?'+url_parse.query
 			try:
-				req = urlopen(url)
+				req = urlopen(encoded_url)
 			except UnicodeEncodeError:
-				url_parse  = target.parse.urlparse(url)
-				quoted_url = url_parse.scheme+'://'+url_parse.netloc+target.parse.quote(url_parse.path)
-				if url_parse.query:
-					quoted_url+='?'+url_parse.query
-				target.es.update('crawled', quoted_url, {'doc':{'crawled': self.domain.site, 'isTarget': False}, 'doc_as_upsert': True})
 				target.es.update('crawled', url, {'doc':{'error': 'EncodeError', 'crawledDate': self.day}, 'doc_as_upsert': True})
 				continue
 			except urllib.error.HTTPError:
@@ -57,8 +56,7 @@ class Crawl:
 					print('not html on ' + url)
 					target.es.update('crawled', url, {'doc':{'error': 'not html', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 
-
-			if (req.geturl() != url) and (req.geturl() != quoted_url):
+			if req.geturl() != encoded_url:
 					target.es.update('crawled', url, {'doc':{'error': 'redirected', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 					print('redirected to '+req.geturl())
 					if target.parse.urlparse(req.geturl()).netloc == self.domain.site:
