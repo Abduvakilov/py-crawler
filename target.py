@@ -96,10 +96,10 @@ class Target:
 		for a in self.lxml.xpath('//a/@href'):
 			if a not in unique_links and noSubstring(a):
 				unique_links.append(a)
-				netloc = parse.urlparse(a).netloc
-				if netloc == self.domain.site or netloc == '':
+				url = parse.urlparse(a)
+				if url.netloc == self.domain.site or url.netloc == '':
 					try:
-						absl = parse.urljoin(self.domain.base_url, parse.quote(netloc.path)+netloc.query)	
+						absl = parse.urljoin(self.domain.base_url, parse.quote(url.path)+url.query)	
 					except ValueError:
 						print('error____________________\n'+a)
 					if parse.urlparse(absl).netloc == self.domain.site:
