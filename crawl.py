@@ -37,7 +37,9 @@ class Crawl:
 				quoted_url = url_parse.scheme+'://'+url_parse.netloc+target.parse.quote(url_parse.path)
 				if url_parse.query:
 					quoted_url+='?'+url_parse.query
-				req = urlopen(quoted_url)
+				target.es.update('crawled', quoted_url, {'doc':{'crawled': self.domain.site, 'isTarget': False}, 'doc_as_upsert': True})
+				target.es.update('crawled', url, {'doc':{'error': 'EncodeError', 'crawledDate': self.day}, 'doc_as_upsert': True})
+				continue
 			except urllib.error.HTTPError:
 				target.es.update('crawled', url, {'doc':{'error': 'HTTPError', 'crawledDate': self.day}, 'doc_as_upsert': True})
 				continue
@@ -60,7 +62,7 @@ class Crawl:
 					target.es.update('crawled', url, {'doc':{'error': 'redirected', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 					print('redirected to '+req.geturl())
 					if target.parse.urlparse(req.geturl()).netloc == self.domain.site:
-						self.visit_if_html(req)
+						visit_if_html(req)
 			elif code < 300:
 				visit_if_html(req)
 
