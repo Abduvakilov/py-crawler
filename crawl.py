@@ -59,7 +59,7 @@ class Crawl:
 			self.scrape(t)
 
 			for e in t.data:
-				print('%s: %s' % (e, t.data[e])) 
+				print(e + ' ' + t.data[e]) 
 			t.send_data(self.day)
 		else:
 			t.not_found(self.day)
