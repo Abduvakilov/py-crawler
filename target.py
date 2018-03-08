@@ -6,8 +6,9 @@ class Domain:
 	def __init__(self, url):
 		short    = parse.urlparse(url)
 		self.site     = short.netloc
-		self.base_url = short.scheme + '://' + self.site + '/'
+		self.base_url = short.scheme + '://' + self.site
 		self.enc      = 'utf8'
+		es.nextPages.append(url)
 		if not es.exists(url):
 			es.update('crawled', self.base_url, {'doc':{'crawled': self.site, 'isTarget': False}, 'doc_as_upsert': True})
 			print('First start of ' + self.site)
@@ -99,7 +100,10 @@ class Target:
 				url = parse.urlparse(a)
 				if url.netloc == self.domain.site or url.netloc == '':
 					try:
-						absl = parse.urljoin(self.domain.base_url, parse.quote(url.path)+url.query)	
+						quoted_path = parse.quote(url.path)
+						if url.query:
+							quoted_path+='?'+url.query
+						absl = parse.urljoin(self.domain.base_url, quoted_path)	
 					except ValueError:
 						print('error____________________\n'+a)
 					if parse.urlparse(absl).netloc == self.domain.site:
