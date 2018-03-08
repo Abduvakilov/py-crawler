@@ -12,7 +12,7 @@ class Crawl:
 	urlNotContains     = ['#','.jpg']
 	require2 = None
 	try:
-		max_pages_to_visit = os.environ['max']
+		max_pages_to_visit = int(os.environ['max'])
 	except:
 		pass
 	
