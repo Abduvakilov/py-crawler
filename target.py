@@ -29,7 +29,7 @@ class Target:
 			source.decode(self.domain.enc).encode('utf8')
 		self.lxml = lxml.fromstring(source)
 
-	def required(self, xpath1, xpath2):
+	def required(self, xpath1, xpath2=None):
 		self.required_element = self.lxml.find(xpath1)
 		if self.required_element is not None:
 			if xpath2 is not None:
@@ -67,10 +67,18 @@ class Target:
 			import re
 			self.data[name] = int(re.search(r'\d+', num[0].text_content()).group())
 
-	def get_data_date(self, name, xpath, format=['%d %B %Y']):
-		date = dateparser.parse(self.lxml.xpath(xpath)[0].text_content(), date_formats=format, languages=['ru'])
+	def get_data_date(self, name, xpath, format=['%d %B %Y'], **karg):
+		import dateparser
+		value = self.lxml.xpath(xpath)[0]
+		try:
+			value = value.text_content().strip()
+		except AttributeError:
+			pass
+		# if 'slice' in karg:
+		# 	value = value[karg['slice']:]
+		# 	print('date:::::::::::'+str(value))
+		date = dateparser.parse(value, date_formats=format, languages=['ru'])
 		if date:
-			import dateparser
 			self.data[name] = date.strftime('%d.%m.%y')
 
 	def get_data_array(self, name, xpath):
@@ -97,10 +105,16 @@ class Target:
 		for a in self.lxml.xpath('//a/@href'):
 			if a not in unique_links and noSubstring(a):
 				unique_links.append(a)
-				url = parse.urlparse(a)
-				if url.netloc == self.domain.site or url.netloc == '':
-					absl = parse.urljoin(self.domain.base_url, a)
-					actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
+				try:
+					url = parse.urlparse(a)
+					if url.netloc == self.domain.site or url.netloc == '':
+						absl = parse.urljoin(self.domain.base_url, a)
+						actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
+				except Exception as e:
+					template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+					message = template.format(type(e).__name__, e.args)
+					print(message)
+					continue
 		try:
 			es.es.bulk(actions, index='crawled', doc_type='crawled')
 		except es.elasticsearch.ElasticsearchException as err:

@@ -5,8 +5,8 @@ import crawl
 crawler           = crawl.Crawl('http://tas-ix.me/')
 
 
-crawler.require1 = './/table[@id="topic_main"]//div[@class="post_wrap"]'
-crawler.require2 = './/fieldset[@class="attach"]'
+crawler.require  = './/table[@id="topic_main"]//div[@class="post_wrap"]'
+crawler.require2 =  './/fieldset[@class="attach"]'
 
 def scrape(t):
 		t.drop_from_required('.//fieldset[@class="attach"]')

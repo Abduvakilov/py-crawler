@@ -10,8 +10,7 @@ class Crawl:
 	expiry_days        = 5
 	max_pages_to_visit = 1000
 	numPagesVisited    = 0
-	urlNotContains     = ['#','.jpg']
-	require2 = None
+	urlNotContains     = ['#','.jpg','mailto:']
 	try:
 		max_pages_to_visit = int(os.environ['max'])
 	except:
@@ -23,12 +22,13 @@ class Crawl:
 	day           = datetime.datetime.now().strftime('%d.%m.%y')
 	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=expiry_days)).strftime('%d.%m.%y')
 
+	require2 = None
 
 	def crawl(self):
 		while self.numPagesVisited <= self.max_pages_to_visit:
 			url   = self.domain.next_url(self.crawledBefore)
 			self.numPagesVisited +=1
-			print('Visiting page ', self.numPagesVisited, ': ', url)
+			print('->', self.numPagesVisited, ': ', url)
 
 			url_parse  = target.parse.urlparse(url)
 			encoded_url = url_parse.scheme+'://'+url_parse.netloc+target.parse.quote(url_parse.path)
@@ -75,7 +75,7 @@ class Crawl:
 		t    = target.Target(req, self.domain)
 		
 		# Main Part
-		if t.required(self.require1, self.require2):
+		if t.required(self.require, self.require2):
 			print('target found')
 
 			self.scrape(t)
@@ -89,7 +89,7 @@ class Crawl:
 		t.links(self.urlNotContains)
 
 		end = time.time()
-		print('Total and individual Scrape time: ' + str(down-start) + ', ' + str(end-down))
+		print('time: ' + str(int(down-start)) + ', ' + str(int((end-down)*1000)))
 
 
 

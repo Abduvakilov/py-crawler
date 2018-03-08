@@ -2,10 +2,10 @@ import sys
 sys.path.append(sys.path[0].replace('/list', ''))
 import crawl
 
-crawler = crawl.Crawl('https://mover.uz/')
+crawler = crawl.Crawl('https://mover.uz')
 
 
-crawler.require1 = './/h1[@class="fl video-title"]'
+crawler.require = './/h1[@class="fl video-title"]'
 
 def scrape(t):
 	t.set_main('title')
@@ -18,6 +18,7 @@ def scrape(t):
 	t.get_data_int('views', './/span[@class="fr views"]/strong')
 	t.get_data_int('likes', './/table[@class="r-desc"]/tr/td[@class="like"]')
 	t.get_data_int('dislikes', './/table[@class="r-desc"]/tr/td[@class="dislike"]')
+	t.get_data_date('publishDate', './/p[@class="cat-date"]/text()[last()]')
 
 
 

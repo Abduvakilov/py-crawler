@@ -3,22 +3,17 @@ sys.path.append(sys.path[0].replace('/list', ''))
 
 import crawl
 
-crawler = crawl.Crawl('https://mover.uz/')
+crawler = crawl.Crawl('http://mytube.uz')
 
 
-crawler.require1 = './/div[@id="aboutUser"]'
+crawler.require = './/div[@class="WhiteBlock CommentsBlock"]'
 
 def scrape(t):
-	t.set_main('title')
-
-	t.get_data('description', './/div[@class="desc-text"]')
-	t.data['description'] = t.data['description'][:-19]
-	# print t.data['description']
-	t.get_data('category', './/p[@class="cat-date"]/a')
-	t.get_data_array('tags', './/p[@class="tags"]/a')
-	t.get_data_int('views', './/span[@class="fr views"]/strong')
-	t.get_data_int('likes', './/table[@class="r-desc"]/tr/td[@class="like"]')
-	t.get_data_int('dislikes', './/table[@class="r-desc"]/tr/td[@class="dislike"]')
+	t.get_data('description', './/div[@id="aboutUser"]/pre')
+	t.get_data('category', './/span[@class="userinfobox-categories-tags-container"]/a[1]')
+	t.get_data_array('tags', './/span[@class="userinfobox-categories-tags-container"]/a[not(position()=1)]')
+	t.get_data_int('views', './/div[@class="Views-Container"]')
+	t.get_data_date('publishDate', './/div[@class="Date"]/text()[last()]')
 
 
 
