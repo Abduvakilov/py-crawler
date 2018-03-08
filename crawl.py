@@ -4,13 +4,17 @@ start = time.time()
 from urllib.request import urlopen
 import datetime
 import target
+import os
 class Crawl:
 	expiry_days        = 5
 	max_pages_to_visit = 1000
 	numPagesVisited    = 0
 	urlNotContains     = ['#','.jpg']
 	require2 = None
-
+	try:
+		max_pages_to_visit = os.environ['max']
+	except:
+		pass
 	
 	def __init__(self, start_url):
 		self.domain = target.Domain(start_url)
@@ -59,7 +63,7 @@ class Crawl:
 			self.scrape(t)
 
 			for e in t.data:
-				print(e + ' ' + t.data[e]) 
+				print(e + ' ' + str(t.data[e])) 
 			t.send_data(self.day)
 		else:
 			t.not_found(self.day)

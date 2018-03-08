@@ -96,12 +96,14 @@ class Target:
 		for a in self.lxml.xpath('//a/@href'):
 			if a not in unique_links and noSubstring(a):
 				unique_links.append(a)
-				try:
-					absl = parse.urljoin(self.domain.base_url, a)
-				except ValueError:
-					print('error____________________\n'+a)
-				if (parse.urlparse(absl).netloc == self.domain.site):
-					actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
+				netloc = parse.urlparse(a).netloc
+				if netloc == self.domain.site or netloc == '':
+					try:
+						absl = parse.urljoin(self.domain.base_url, parse.quote(netloc.path)+netloc.query)	
+					except ValueError:
+						print('error____________________\n'+a)
+					if parse.urlparse(absl).netloc == self.domain.site:
+						actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
 		try:
 			es.es.bulk(actions, index='crawled', doc_type='crawled')
 		except es.elasticsearch.ElasticsearchException as err:
