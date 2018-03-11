@@ -23,7 +23,7 @@ class Target:
 	def __init__(self, req, domain):
 		self.data   = {}
 		self.required_element=None
-		self.url    = req.url
+		self.url    = parse.unquote(req.url)
 		self.domain = domain
 		source      = req.read()
 		if self.domain.enc != 'utf8':
@@ -99,12 +99,21 @@ class Target:
 
 	def send_data(self, day):
 		self.data['crawledDate'] = day
-		es.update('targets', self.url, {'doc': self.data, 'doc_as_upsert': True})
-		es.update('crawled', self.url, {'doc':{'crawledDate': day, 'isTarget':True}, 'doc_as_upsert': True})
+		try:
+			es.update('targets', self.url, {'doc': self.data, 'doc_as_upsert': True})
+			es.update('crawled', self.url, {'doc':{'crawledDate': day, 'isTarget':True}, 'doc_as_upsert': True})
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			message = template.format(type(e).__name__, e.args)
+			print(message)
 
 	def not_found(self, day):
-		res = es.update('crawled', self.url, {'doc':{'crawledDate': day, 'isTarget':False}, 'doc_as_upsert': True})
-		# print res
+		try:
+			res = es.update('crawled', self.url, {'doc':{'crawledDate': day, 'isTarget':False}, 'doc_as_upsert': True})
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			message = template.format(type(e).__name__, e.args)
+			print(message)
 
 	def links(self, notContains):
 		unique_links = []
