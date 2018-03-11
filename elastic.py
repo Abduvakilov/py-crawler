@@ -2,6 +2,12 @@ import os
 import elasticsearch
 if 'es' in os.environ:
 	es     = elasticsearch.Elasticsearch(os.environ['es'])
+elif 'espr' in os.environ:
+	es     = elasticsearch.Elasticsearch(os.environ['espr'],
+    			http_auth=(os.environ['esu'], os.environ['esp']),
+    			scheme="http",
+    			port=int(os.environ['port'])
+    		)
 else:
 	es     = elasticsearch.Elasticsearch()
 
@@ -28,6 +34,7 @@ def next(crawledBefore, site):
 			res = es.search(index="crawled", doc_type="crawled",
 			    body={
 					'size' : 100,
+					'_source': False,
 					'query': {
 						'bool': {
 							'must': [

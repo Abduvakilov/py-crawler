@@ -1,5 +1,6 @@
 import sys
 sys.path.append(sys.path[0].replace('/list', ''))
+sys.path.append(sys.path[0].replace('\\list', ''))
 import crawl
 
 crawler           = crawl.Crawl('http://tas-ix.me/')

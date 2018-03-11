@@ -1,5 +1,7 @@
 import sys
 sys.path.append(sys.path[0].replace('/list', ''))
+sys.path.append(sys.path[0].replace('\\list', ''))
+
 import crawl
 
 crawler = crawl.Crawl('http://www.ttt.uz')
@@ -53,7 +55,7 @@ def scrape(t):
 		del arr[e]
 	if 'tbd' in t.data:
 		del t.data['tbd']
-	arr = [x.strip() for x in t.data['description'].split('‧') if x.strip() != '']
+	arr = [x.strip() for x in arr if x.strip() != '']
 	t.data['description'] = t.br_replacer.join(arr).replace('Про фильм:','').replace(t.br_replacer[:-1]+t.br_replacer,'')
 
 	
