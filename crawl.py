@@ -11,10 +11,8 @@ class Crawl:
 	max_pages_to_visit = 1000
 	numPagesVisited    = 0
 	urlNotContains     = ['#','.jpg','mailto:']
-	try:
+	if 'max' in os.environ:
 		max_pages_to_visit = int(os.environ['max'])
-	except:
-		pass
 	
 	def __init__(self, start_url):
 		self.domain = target.Domain(start_url)
@@ -87,7 +85,7 @@ class Crawl:
 			t.not_found(self.day)
 
 		t.links(self.urlNotContains)
-
+		del t
 		end = time.time()
 		print('time: ' + str(int(down-start)) + ', ' + str(int((end-down)*1000)))
 

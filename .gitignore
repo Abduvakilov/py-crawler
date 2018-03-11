@@ -1,3 +1,4 @@
 .DS_Store
 *.pyc
 crawlv0.py
+remover.py

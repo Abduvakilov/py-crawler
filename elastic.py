@@ -1,11 +1,9 @@
 import os
 import elasticsearch
-try:
-	espath = os.environ['es']
-except KeyError:
-	es     = elasticsearch.Elasticsearch()
+if 'es' in os.environ:
+	es     = elasticsearch.Elasticsearch(os.environ['es'])
 else:
-	es     = elasticsearch.Elasticsearch(espath)
+	es     = elasticsearch.Elasticsearch()
 
 nextPages = []
 def exists(url):

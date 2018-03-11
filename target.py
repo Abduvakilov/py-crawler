@@ -19,9 +19,10 @@ class Domain:
 
 class Target:
 	br_replacer = ' '
-	data        = {}
 
 	def __init__(self, req, domain):
+		self.data   = {}
+		self.required_element=None
 		self.url    = req.url
 		self.domain = domain
 		source      = req.read()
@@ -45,17 +46,29 @@ class Target:
 		for element in self.required_element.xpath(xpath):
 			element.drop_tree()
 
-	def set_main(self, name):
-		for br in self.required_element.xpath('//br'):
+	def replace_br(self, element):
+		for br in element.xpath('.//br'):
 			br.text = self.br_replacer
+		for li in element.xpath('.//li'):
+			if li.text:
+				li.text = self.br_replacer
+		for p in element.xpath('.//p')[:-1]:
+			if p.text:
+				p.text += self.br_replacer
+			else:
+				p.text = self.br_replacer
+
+	def set_main(self, name):
+		self.replace_br(self.required_element)
 		self.data[name] = self.required_element.text_content().replace('\t', '').replace('\n', '')
 		self.data[name] = self.space(self.data[name])
 
 	def get_data(self, name, xpath):
-		for br in self.required_element.xpath('//br'):
-			br.text = self.br_replacer
 		self.data[name] = self.lxml.xpath(xpath)[0].text_content().replace('\t', '').replace('\n', '')
 		self.data[name] = self.space(self.data[name])
+
+	def get_atr(self, name, xpath):
+		self.data[name] = self.lxml.xpath(xpath)[0]
 
 	def space(self, data):
 		import re
@@ -107,14 +120,13 @@ class Target:
 				unique_links.append(a)
 				try:
 					url = parse.urlparse(a)
-					if url.netloc == self.domain.site or url.netloc == '':
-						absl = parse.urljoin(self.domain.base_url, a)
+					if url.netloc.endswith(self.domain.site) or url.netloc == '':
+						absl = parse.urljoin(self.domain.base_url, parse.unquote(a))
 						actions.extend(({'create':{'_id': absl}}, {'crawled': self.domain.site, 'isTarget': False}))
 				except Exception as e:
 					template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 					message = template.format(type(e).__name__, e.args)
 					print(message)
-					continue
 		try:
 			es.es.bulk(actions, index='crawled', doc_type='crawled')
 		except es.elasticsearch.ElasticsearchException as err:
