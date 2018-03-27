@@ -60,7 +60,8 @@ def next(crawledBefore, site):
 				return cont()
 			else:
 				print('no nextpage')
-				return
+				import sys
+				sys.exit(0)
 
 def update(index, _id, body):
 	try:

@@ -7,7 +7,7 @@ import crawl
 crawler = crawl.Crawl('http://www.ttt.uz')
 
 dictionary = {
-    'year': ['Год выпуска', 'Год', 'Chiqarilgan yili'],
+    'year': ['Год выпуска', 'Год', 'Chiqarilgan Yili'],
     'country': ['Страна', 'Davlat'],
     'genre': ['Жанр','Janr'],
     'time': ['Время','Davomiyligi'],
