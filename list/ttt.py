@@ -22,7 +22,7 @@ crawler.require = './/div[@class="entry-content"]'
 
 def scrape(t):
 	t.br_replacer=' ‧ '
-	t.drop_from_required('.//script')
+	t.dropFromMain('.//script')
 
 	t.set_main('description')
 

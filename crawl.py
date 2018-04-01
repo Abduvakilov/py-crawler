@@ -7,38 +7,35 @@ import datetime
 import target
 import os
 class Crawl:
-	expiry_days        = 5
-	max_pages_to_visit = 1000
-	numPagesVisited    = 0
-	urlNotContains     = ['#','.jpg','mailto:']
+	EXPIRY_DAYS     = 5
+	MAX_VISITS      = 1000
+	numPagesVisited = 0
+	urlNotContains  = ['#','.jpg','mailto:']
 	if 'max' in os.environ:
-		max_pages_to_visit = int(os.environ['max'])
+		MAX_VISITS  = int(os.environ['max'])
 	
-	def __init__(self, start_url):
-		self.domain = target.Domain(start_url)
+	def __init__(self, startUrl, enc='utf8'):
+		self.domain = target.Domain(startUrl, enc)
 
 	day           = datetime.datetime.now().strftime('%d.%m.%y')
-	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=expiry_days)).strftime('%d.%m.%y')
+	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=EXPIRY_DAYS)).strftime('%d.%m.%y')
 
 	require2 = None
 
 	def crawl(self):
-		while self.numPagesVisited <= self.max_pages_to_visit:
+		while self.numPagesVisited <= self.MAX_VISITS:
 			url   = self.domain.next_url(self.crawledBefore)
 			self.numPagesVisited +=1
 			print('->', self.numPagesVisited, ': ', url)
 
-			url_parse  = target.parse.urlparse(url)
-			encoded_url = url_parse.scheme+'://'+url_parse.netloc+target.parse.quote(url_parse.path)
-			if url_parse.query:
-				encoded_url+='?'+url_parse.query
+			urlParse  = target.parse.urlparse(url)
+			encodedUrl = urlParse.scheme+'://'+urlParse.netloc+target.parse.quote(urlParse.path)
+			if urlParse.query:
+				encodedUrl+='?'+urlParse.query
 			try:
-				req = urlopen(encoded_url)
-			except UnicodeEncodeError:
-				target.es.update('crawled', url, {'doc':{'error': 'EncodeError', 'crawledDate': self.day}, 'doc_as_upsert': True})
-				continue
-			except urllib.error.HTTPError:
-				target.es.update('crawled', url, {'doc':{'error': 'HTTPError', 'crawledDate': self.day}, 'doc_as_upsert': True})
+				req = urlopen(encodedUrl)
+			except (UnicodeEncodeError, urllib.error.HTTPError) as e:
+				target.es.update('crawled', url, {'doc':{'error': type(e).__name__, 'crawledDate': self.day}, 'doc_as_upsert': True})
 				continue
 			except Exception as e:
 				template = "An exception of type {0} occurred. Arguments:\n{1!r}"
@@ -54,7 +51,7 @@ class Crawl:
 					print('not html on ' + url)
 					target.es.update('crawled', url, {'doc':{'error': 'not html', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 
-			if req.geturl() != encoded_url:
+			if req.geturl() != encodedUrl:
 					target.es.update('crawled', url, {'doc':{'error': 'redirected', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 					print('redirected to '+req.geturl())
 					if target.parse.urlparse(req.geturl()).netloc == self.domain.site:
@@ -73,13 +70,13 @@ class Crawl:
 		t    = target.Target(req, self.domain)
 		
 		# Main Part
-		if t.required(self.require, self.require2):
+		if self.condition(t, self.require, self.require2):
 			print('target found')
 
 			self.scrape(t)
 
 			for e in t.data:
-				print(e + ' ' + str(t.data[e])) 
+				print(e + ': ' + str(t.data[e])) 
 			t.send_data(self.day)
 		else:
 			t.not_found(self.day)
@@ -89,6 +86,9 @@ class Crawl:
 		end = time.time()
 		print('time: ' + str(int(down-start)) + ', ' + str(int((end-down)*1000)))
 
+	def condition(self, t, xpath, xpath2):
+		t.mainEl = t.lxml.find(xpath)
+		return t.mainEl is not None
 
 
 

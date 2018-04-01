@@ -3,11 +3,11 @@ from urllib import parse
 import lxml.html as lxml
 
 class Domain:
-	def __init__(self, url):
+	def __init__(self, url, enc):
 		short    = parse.urlparse(url)
 		self.site     = short.netloc
 		self.base_url = short.scheme + '://' + self.site
-		self.enc      = 'utf8'
+		self.enc      = enc
 		es.nextPages.append(url)
 		if not es.exists(url):
 			es.update('crawled', self.base_url, {'doc':{'crawled': self.site, 'isTarget': False}, 'doc_as_upsert': True})
@@ -22,7 +22,7 @@ class Target:
 
 	def __init__(self, req, domain):
 		self.data   = {}
-		self.required_element=None
+		self.mainEl = None
 		self.url    = parse.unquote(req.url)
 		self.domain = domain
 		source      = req.read()
@@ -30,20 +30,12 @@ class Target:
 			source.decode(self.domain.enc).encode('utf8')
 		self.lxml = lxml.fromstring(source)
 
-	def required(self, xpath1, xpath2=None):
-		self.required_element = self.lxml.find(xpath1)
-		if self.required_element is not None:
-			if xpath2 is not None:
-				return self.required_element.find(xpath2) is not None
-			else: return True
-		else: return False
-
-	def drop_from(self, name, xpath):
+	def drop(self, xpath):
 		for element in self.lxml.xpath(xpath):
 			element.drop_tree()
 
-	def drop_from_required(self, xpath):
-		for element in self.required_element.xpath(xpath):
+	def dropFromMain(self, xpath):
+		for element in self.mainEl.xpath(xpath):
 			element.drop_tree()
 
 	def replace_br(self, element):
@@ -59,20 +51,25 @@ class Target:
 				p.text = self.br_replacer
 
 	def set_main(self, name):
-		self.replace_br(self.required_element)
-		self.data[name] = self.required_element.text_content().replace('\t', '').replace('\n', '')
-		self.data[name] = self.space(self.data[name])
+		self.replace_br(self.mainEl)
+		self.data[name] = self.mainEl.text_content().replace('\t', '').replace('\n', '')
 
 	def get_data(self, name, xpath):
-		self.data[name] = self.lxml.xpath(xpath)[0].text_content().replace('\t', '').replace('\n', '')
-		self.data[name] = self.space(self.data[name])
+		try:
+			self.data[name] = self.lxml.xpath(xpath)[0]
+		except IndexError:
+			pass
+		else:
+			self.data[name].drop_tree()
+			self.data[name] = self.space(self.data[name].text_content())
+
 
 	def get_atr(self, name, xpath):
 		self.data[name] = self.lxml.xpath(xpath)[0]
 
 	def space(self, data):
 		import re
-		return " ".join(re.split("\s+", data, flags=re.UNICODE)).strip()
+		return " ".join(re.split("\s+", data, flags=re.UNICODE)).strip().replace('\t', '').replace('\n', '')
 
 	def get_data_int(self, name, xpath):
 		num = self.lxml.xpath(xpath)
