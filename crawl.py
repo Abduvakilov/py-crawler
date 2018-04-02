@@ -32,10 +32,11 @@ class Crawl:
 			encodedUrl = urlParse.scheme+'://'+urlParse.netloc+target.parse.quote(urlParse.path)
 			if urlParse.query:
 				encodedUrl+='?'+urlParse.query
+			preUrl = None
 			if 'preUrl' in os.environ:
-				encodedUrl=os.environ['preUrl']+encodedUrl
+				preUrl=os.environ['preUrl']+encodedUrl
 			try:
-				req = urlopen(encodedUrl)
+				req = urlopen(preUrl or encodedUrl)
 			except (UnicodeEncodeError, urllib.error.HTTPError) as e:
 				target.es.update('crawled', url, {'doc':{'error': type(e).__name__, 'crawledDate': self.day}, 'doc_as_upsert': True})
 				continue
@@ -53,7 +54,7 @@ class Crawl:
 					print('not html on ' + url)
 					target.es.update('crawled', url, {'doc':{'error': 'not html', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 
-			if req.geturl() != encodedUrl:
+			if req.geturl() != (preUrl or encodedUrl):
 					target.es.update('crawled', url, {'doc':{'error': 'redirected', 'crawledDate': self.day}, 'doc_as_upsert' : True})
 					print('redirected to '+req.geturl())
 					if target.parse.urlparse(req.geturl()).netloc == self.domain.site:

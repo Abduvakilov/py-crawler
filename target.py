@@ -23,7 +23,10 @@ class Target:
 	def __init__(self, req, domain):
 		self.data   = {}
 		self.mainEl = None
+		import os
 		self.url    = parse.unquote(req.url)
+		if 'preUrl' in os.environ:
+			self.url = self.url.replace(os.environ['preUrl'],'')
 		self.domain = domain
 		source      = req.read()
 		if self.domain.enc != 'utf8':
