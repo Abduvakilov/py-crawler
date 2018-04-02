@@ -133,10 +133,11 @@ class Target:
 					template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 					message = template.format(type(e).__name__, e.args)
 					print(message)
-		try:
-			es.es.bulk(actions, index='crawled', doc_type='crawled')
-		except es.elasticsearch.ElasticsearchException as err:
-			print('error: ' + err)
+		if len(actions) > 0:
+			try:
+				es.es.bulk(actions, index='crawled', doc_type='crawled')
+			except es.elasticsearch.ElasticsearchException as err:
+				print('error: ' + err)
 
 
 
