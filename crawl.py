@@ -32,6 +32,8 @@ class Crawl:
 			encodedUrl = urlParse.scheme+'://'+urlParse.netloc+target.parse.quote(urlParse.path)
 			if urlParse.query:
 				encodedUrl+='?'+urlParse.query
+			if 'preUrl' in os.environ:
+				encodedUrl=os.environ['preUrl']+encodedUrl
 			try:
 				req = urlopen(encodedUrl)
 			except (UnicodeEncodeError, urllib.error.HTTPError) as e:

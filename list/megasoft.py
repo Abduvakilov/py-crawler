@@ -28,7 +28,6 @@ for x in stringSel:
 	xpathstr[x] = template.format(stringSel[x])
 for x in other:
 	xpath[x] = template.format(other[x])
-print(xpath)
 
 def scrape(t):
 	t.get_data('title', './/span[@class="title"]')
