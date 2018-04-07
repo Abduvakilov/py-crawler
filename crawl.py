@@ -21,6 +21,7 @@ class Crawl:
 	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=EXPIRY_DAYS)).strftime('%d.%m.%y')
 
 	require2 = None
+	limited  = True
 
 	def crawl(self):
 		while self.numPagesVisited <= self.MAX_VISITS:
@@ -33,8 +34,8 @@ class Crawl:
 			if urlParse.query:
 				encodedUrl+='?'+urlParse.query
 			preUrl = None
-			if 'preUrl' in os.environ:
-				preUrl=os.environ['preUrl']+encodedUrl
+			if self.limited:
+				preUrl="http://niagara.uz/inc/test.php?url="+encodedUrl
 			try:
 				req = urlopen(preUrl or encodedUrl)
 			except (UnicodeEncodeError, urllib.error.HTTPError) as e:

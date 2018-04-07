@@ -25,8 +25,7 @@ class Target:
 		self.mainEl = None
 		import os
 		self.url    = parse.unquote(req.url)
-		if 'preUrl' in os.environ:
-			self.url = self.url.replace(os.environ['preUrl'],'')
+		self.url = self.url.replace("http://niagara.uz/inc/test.php?url=",'')
 		self.domain = domain
 		source      = req.read()
 		if self.domain.enc != 'utf8':

@@ -5,7 +5,7 @@ sys.path.append(sys.path[0].replace('\\list', ''))
 import crawl
 
 crawler = crawl.Crawl('https://mover.uz')
-
+crawler.limited = False
 
 crawler.require = './/h1[@class="fl video-title"]'
 

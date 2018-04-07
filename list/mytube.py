@@ -5,6 +5,7 @@ sys.path.append(sys.path[0].replace('\\list', ''))
 import crawl
 
 crawler = crawl.Crawl('http://mytube.uz')
+crawler.limited = False
 
 
 crawler.require = './/div[@class="WhiteBlock CommentsBlock"]'
