@@ -11,8 +11,10 @@ class Crawl:
 	MAX_VISITS      = 1000
 	numPagesVisited = 0
 	urlNotContains  = ['#','.jpg','mailto:']
+	limited  = False
 	if 'max' in os.environ:
 		MAX_VISITS  = int(os.environ['max'])
+		limited  = True
 	
 	def __init__(self, startUrl, enc='utf8'):
 		self.domain = target.Domain(startUrl, enc)
@@ -21,7 +23,6 @@ class Crawl:
 	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=EXPIRY_DAYS)).strftime('%d.%m.%y')
 
 	require2 = None
-	limited  = True
 
 	def crawl(self):
 		while self.numPagesVisited <= self.MAX_VISITS:

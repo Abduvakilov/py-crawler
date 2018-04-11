@@ -20,7 +20,7 @@ def scrape(t):
 	t.get_data_int('views', './/span[@class="fr views"]/strong')
 	t.get_data_int('likes', './/table[@class="r-desc"]/tr/td[@class="like"]')
 	t.get_data_int('dislikes', './/table[@class="r-desc"]/tr/td[@class="dislike"]')
-	t.get_data_date('publishDate', './/p[@class="cat-date"]/text()[last()]')
+	t.get_data_date('publishDate', './/p[@class="cat-date"]/text()[1]')
 
 
 
