@@ -54,7 +54,7 @@ class Target:
 
 	def set_main(self, name):
 		self.replace_br(self.mainEl)
-		self.data[name] = self.mainEl.text_content().replace('\t', '').replace('\n', '')
+		self.data[name] = self.missSpace(self.mainEl.text_content())
 
 	def get_data(self, name, xpath):
 		try:
@@ -63,15 +63,17 @@ class Target:
 			pass
 		else:
 			self.data[name].drop_tree()
-			self.data[name] = self.space(self.data[name].text_content())
+			self.data[name] = self.missSpace(self.data[name].text_content())
 
 
 	def get_atr(self, name, xpath):
 		self.data[name] = self.lxml.xpath(xpath)[0]
 
-	def space(self, data):
-		import re
-		return " ".join(re.split("\s+", data, flags=re.UNICODE)).strip().replace('\t', '').replace('\n', '')
+	def missSpace(self, string):
+		string = string.replace('\t', '').replace('\n', '')
+		while '  ' in string:
+			string = string.replace('  ', ' ')
+		return string.strip()
 
 	def get_data_int(self, name, xpath):
 		num = self.lxml.xpath(xpath)
@@ -94,7 +96,13 @@ class Target:
 			self.data[name] = date.strftime('%d.%m.%y')
 
 	def get_data_array(self, name, xpath):
-		self.data[name] = [e.text_content() for e in self.lxml.xpath(xpath)]
+		arr = self.lxml.xpath(xpath)
+		if arr:
+			self.data[name] = [e.text_content() for e in arr]
+	def get_atr_array(self, name, xpath, cut=0):
+		arr = self.lxml.xpath(xpath)
+		if arr:
+			self.data[name] = [e[cut:] for e in arr]
 
 	def send_data(self, day):
 		self.data['crawledDate'] = day

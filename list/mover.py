@@ -13,7 +13,7 @@ def scrape(t):
 	t.set_main('title')
 
 	t.get_data('description', './/div[@class="desc-text"]')
-	t.data['description'] = t.data['description'][:-19]
+	t.data['description'] = t.data['description'][:-21]
 	# print t.data['description']
 	t.get_data('category', './/p[@class="cat-date"]/a')
 	t.get_data_array('tags', './/p[@class="tags"]/a')

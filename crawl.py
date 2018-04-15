@@ -22,6 +22,7 @@ class Crawl:
 	day           = datetime.datetime.now().strftime('%d.%m.%y')
 	crawledBefore = (datetime.datetime.now() - datetime.timedelta(days=EXPIRY_DAYS)).strftime('%d.%m.%y')
 
+	require  = None
 	require2 = None
 
 	def crawl(self):
@@ -73,6 +74,7 @@ class Crawl:
 	def visit(self, req):
 		down = time.time()
 		t    = target.Target(req, self.domain)
+		t.links(self.urlNotContains)
 		
 		# Main Part
 		if self.condition(t, self.require, self.require2):
@@ -86,7 +88,6 @@ class Crawl:
 		else:
 			t.not_found(self.day)
 
-		t.links(self.urlNotContains)
 		del t
 		end = time.time()
 		print('time: ' + str(int(down-start)) + ', ' + str(int((end-down)*1000)))
