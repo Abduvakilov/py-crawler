@@ -20,7 +20,7 @@ selector = {
 }
 xpath = {}
 for x in selector:
-  xpath[x] = './/div[@id="info"]//td[text()="'+selector[x]+'")]/following-sibling::td'
+  xpath[x] = './/div[@id="info"]//td[text()="'+selector[x]+'"]/following-sibling::td'
 
 def scrape(t):
   t.set_main('title')
@@ -31,7 +31,7 @@ def scrape(t):
   t.get_data('forAge', './/div[@id="info"]/td[contains(., "Возраст:")]/following-sibling::td/b')
   t.get_data('description', './/div[@id="descripton"]')
 
-crawler.urlNotContains.extend(('/uz/','/en/'))
+crawler.urlNotContains.extend(('/uz/','/en/', '.png'))
 
 crawler.scrape = scrape
 crawler.crawl()
