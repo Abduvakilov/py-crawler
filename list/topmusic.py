@@ -5,16 +5,6 @@ import crawl
 
 crawler = crawl.Crawl('http://topmusic.uz', 'windows-1251')
 
-# albumPage = {
-#     albumName : '.box-mid tr:first-child td:nth-child(2)',
-#     img: '.box-mid img@src',
-#     artistName: '.box-mid tr:nth-child(2) td:nth-child(2)',
-#     genre: '.box-mid tr:nth-child(3) td:nth-child(2)',
-#     year: '.box-mid tr:nth-child(4) td:nth-child(2) | whiteSpace | parseInt',
-#     link: 'tr:nth-child(6) td:nth-child(2) a@href',
-#     song: ['.box-mid .block tr span']
-#     }
-
 def condition(t, req1, req2):
 	if '/album-' in t.url:
 		crawler.scrape = albumScrape
@@ -49,6 +39,3 @@ def albumScrape(t):
 crawler.condition = condition
 crawler.urlNotContains.extend(('/play/', '/get/', 'javascript:', '.pls', '/download/'))
 crawler.crawl()
-
-
-

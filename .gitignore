@@ -1,5 +1,5 @@
+logs/
 .DS_Store
 *.pyc
-crawlv0.py
 aws es.py
 

@@ -1,5 +1,6 @@
 import os
 import elasticsearch
+from logger import Logger
 if 'es' in os.environ:
 	es     = elasticsearch.Elasticsearch(os.environ['es'])
 elif 'espr' in os.environ:
@@ -11,6 +12,7 @@ elif 'espr' in os.environ:
 else:
 	es     = elasticsearch.Elasticsearch()
 
+logger = Logger('elastic').get()
 nextPages = []
 def exists(url):
 	return es.exists(index="crawled", doc_type='crawled', id=url)
@@ -53,13 +55,13 @@ def next(crawledBefore, site):
 					}
 				})
 		except elasticsearch.ElasticsearchException as err:
-			print(err)
+			logger.exception(err)
 		else:
 			if res['hits']['total'] != 0:
 				nextPages = [e['_id'] for e in res['hits']['hits']]
 				return cont()
 			else:
-				print('no nextpage')
+				logger.warning('no nextpage')
 				import sys
 				sys.exit(0)
 
@@ -67,6 +69,4 @@ def update(index, _id, body):
 	try:
 		return es.update(index=index, doc_type=index, id=_id, body=body, _source=False)
 	except elasticsearch.ElasticsearchException as err:
-		print(err)
-	# else:
-	# 	print res
+		logger.exception(err)

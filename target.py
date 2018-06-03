@@ -1,7 +1,7 @@
 import elastic as es
 from urllib import parse
 import lxml.html as lxml
-
+from logger import Logger
 class Domain:
 	def __init__(self, url, enc):
 		short    = parse.urlparse(url)
@@ -9,9 +9,10 @@ class Domain:
 		self.base_url = short.scheme + '://' + self.site
 		self.enc      = enc
 		es.nextPages.append(url)
+		self.logger = Logger(self.__class__.__name__).get()
 		if not es.exists(url):
 			es.update('crawled', self.base_url, {'doc':{'crawled': self.site, 'isTarget': False}, 'doc_as_upsert': True})
-			print('First start of ' + self.site)
+			self.logger.info('First start of ' + self.site)
 			import time
 			time.sleep(2)
 	def next_url(self, crawledBefore):
@@ -31,6 +32,7 @@ class Target:
 		if self.domain.enc != 'utf8':
 			source.decode(self.domain.enc).encode('utf8')
 		self.lxml = lxml.fromstring(source)
+		self.logger = Logger(self.__class__.__name__).get()
 
 	def drop(self, xpath):
 		for element in self.lxml.xpath(xpath):
@@ -90,7 +92,6 @@ class Target:
 			pass
 		# if 'slice' in karg:
 		# 	value = value[karg['slice']:]
-		# 	print('date:::::::::::'+str(value))
 		date = dateparser.parse(value, date_formats=format, languages=['ru'])
 		if date:
 			self.data[name] = date.strftime('%d.%m.%y')
@@ -112,7 +113,7 @@ class Target:
 		except Exception as e:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			message = template.format(type(e).__name__, e.args)
-			print(message)
+			self.logger.exception(message)
 
 	def not_found(self, day):
 		try:
@@ -120,7 +121,7 @@ class Target:
 		except Exception as e:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			message = template.format(type(e).__name__, e.args)
-			print(message)
+			self.logger.exception(message)
 
 	def links(self, notContains):
 		unique_links = []
@@ -142,12 +143,14 @@ class Target:
 				except Exception as e:
 					template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 					message = template.format(type(e).__name__, e.args)
-					print(message)
+					self.logger.exception(message)
 		if len(actions) > 0:
 			try:
-				es.es.bulk(actions, index='crawled', doc_type='crawled')
+				res = es.es.bulk(actions, index='crawled', doc_type='crawled')
+				new_links = [item['create']['_id'] for item in res['items'] if item['create']['status'] != 409]
+				if new_links: self.logger.debug('new links: {}'.format(new_links))
 			except es.elasticsearch.ElasticsearchException as err:
-				print('error: ' + err)
+				self.logger.error('error: ' + err)
 
 
 
